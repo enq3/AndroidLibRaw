@@ -68,20 +68,20 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_homesoft_photo_libraw_LibRaw_ex
     }
     ret=libRaw->unpack_thumb();
     if (ret != LIBRAW_SUCCESS) {
-        libraw.recycle();
+        libRaw->recycle();
         return nullptr;
     }
-    libraw_processed_image_t *thumb = libraw.dcraw_make_mem_thumb();
+    libraw_processed_image_t *thumb = libRaw->dcraw_make_mem_thumb();
     if (!thumb) {
-        libraw.recycle();
+        libRaw->recycle();
         return nullptr;
     }
     jbyteArray bytes = env->NewByteArray(thumb->data_size);
     env->SetByteArrayRegion(bytes, 0, thumb->data_size, (jbyte *) thumb->data);
 
     // Освобождаем ресурсы
-    libraw.dcraw_clear_mem(thumb);
-    libraw.recycle();
+    libRaw->dcraw_clear_mem(thumb);
+    libRaw->recycle();
     return bytes;
 }
 extern "C" JNIEXPORT jint JNICALL Java_com_homesoft_photo_libraw_LibRaw_openFd(JNIEnv* env, jobject jLibRaw, jint fd){
