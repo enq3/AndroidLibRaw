@@ -170,6 +170,7 @@ public class LibRaw implements AutoCloseable {
     public native int openBufferPtr(long ptr, int size, boolean useThumb);
     public native int openBuffer(byte[] buffer, int size, boolean useThumb);
     public native int openFd(int fd);
+    public native byte[] extractThumb(byte[] buffer, int size);
 
     public native int dcrawProcess();
     public native int dcrawProcessForced(@NonNull ByteBuffer colorCurve);

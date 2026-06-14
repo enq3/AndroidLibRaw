@@ -58,6 +58,32 @@ extern "C" JNIEXPORT jint JNICALL Java_com_homesoft_photo_libraw_LibRaw_openBuff
     }
     return result;
 }
+extern "C" JNIEXPORT jbyteArray JNICALL Java_com_homesoft_photo_libraw_LibRaw_extractThumb(JNIEnv* env, jobject jLibRaw, jbyteArray buffer, jint size){
+    auto libRaw = getLibRaw(env, jLibRaw);
+    auto ptr = env->GetPrimitiveArrayCritical(buffer, nullptr);
+    int ret=libRaw->open_buffer(ptr, size);
+    env->ReleasePrimitiveArrayCritical(buffer, ptr, 0);
+    if (ret != LIBRAW_SUCCESS) {
+        return nullptr;
+    }
+    ret=libRaw->unpack_thumb();
+    if (ret != LIBRAW_SUCCESS) {
+        libraw.recycle();
+        return nullptr;
+    }
+    libraw_processed_image_t *thumb = libraw.dcraw_make_mem_thumb();
+    if (!thumb) {
+        libraw.recycle();
+        return nullptr;
+    }
+    jbyteArray bytes = env->NewByteArray(thumb->data_size);
+    env->SetByteArrayRegion(bytes, 0, thumb->data_size, (jbyte *) thumb->data);
+
+    // Освобождаем ресурсы
+    libraw.dcraw_clear_mem(thumb);
+    libraw.recycle();
+    return bytes;
+}
 extern "C" JNIEXPORT jint JNICALL Java_com_homesoft_photo_libraw_LibRaw_openFd(JNIEnv* env, jobject jLibRaw, jint fd){
     LibRaw_fd_datastream stream(fd);
     if (!stream.valid()) {
