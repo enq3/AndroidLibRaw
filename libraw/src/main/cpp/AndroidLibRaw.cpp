@@ -152,21 +152,37 @@ jobject AndroidLibRaw::getConfigByName(JNIEnv* env, const char* name) {
     return env->GetStaticObjectField(clBitmapConfig, fidARGB_8888);
 }
 
-jobject AndroidLibRaw::createBitmap(JNIEnv* env, jobject config, jint width, jint height) {
-    jclass clBitmap = env->FindClass("android/graphics/Bitmap");
-    if (android_get_device_api_level() >= 26 && imgdata.params.output_color != 1) {
-        auto midCreateBitmap = env->GetStaticMethodID(clBitmap, "createBitmap",
-                                                           "(IILandroid/graphics/Bitmap$Config;ZLandroid/graphics/ColorSpace;)Landroid/graphics/Bitmap;");
-        auto classLibRaw = env->FindClass("com/homesoft/photo/libraw/LibRaw");
-        auto midGetColorSpace = env->GetStaticMethodID(classLibRaw, "getColorSpace",
-                                                       "(I)Landroid/graphics/ColorSpace;");
-        auto colorSpace = env->CallStaticObjectMethod(classLibRaw, midGetColorSpace, imgdata.params.output_color);
-        return env->CallStaticObjectMethod(clBitmap, midCreateBitmap, width, height, config, false, colorSpace);
-    } else {
-        jmethodID midCreateBitmap = env->GetStaticMethodID(clBitmap, "createBitmap",
-                                                           "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
-        return env->CallStaticObjectMethod(clBitmap, midCreateBitmap, width, height, config);
-    }
+jobject AndroidLibRaw::createBitmap(JNIEnv* env, jobject config, jint width, jint height) { 
+    jclass clBitmap = env->FindClass("android/graphics/Bitmap"); 
+    jobject resultBitmap = nullptr;
+
+    if (android_get_device_api_level() >= 26 && imgdata.params.output_color != 1) { 
+        auto midCreateBitmap = env->GetStaticMethodID(clBitmap, "createBitmap", "(IILandroid/graphics/Bitmap$Config;ZLandroid/graphics/ColorSpace;)Landroid/graphics/Bitmap;"); 
+        
+        jclass classLibRaw = env->FindClass("com/homesoft/photo/libraw/LibRaw"); 
+        auto midGetColorSpace = env->GetStaticMethodID(classLibRaw, "getColorSpace", "(I)Landroid/graphics/ColorSpace;"); 
+        
+        jobject colorSpace = env->CallStaticObjectMethod(classLibRaw, midGetColorSpace, imgdata.params.output_color); 
+        
+        // Создаем сам Битмап
+        resultBitmap = env->CallStaticObjectMethod(clBitmap, midCreateBitmap, width, height, config, false, colorSpace); 
+        
+        // Очищаем локальные ссылки ветки Android 8.0+
+        env->DeleteLocalRef(colorSpace);
+        env->DeleteLocalRef(classLibRaw);
+    } else { 
+        jmethodID midCreateBitmap = env->GetStaticMethodID(clBitmap, "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;"); 
+        
+        // Создаем сам Битмап
+        resultBitmap = env->CallStaticObjectMethod(clBitmap, midCreateBitmap, width, height, config); 
+    } 
+
+    // Очищаем ссылку на базовый класс Битмапа (Критично!)
+    env->DeleteLocalRef(clBitmap); 
+
+    // Возвращаем объект. Ссылку на сам resultBitmap очищать НЕЛЬЗЯ, 
+    // она автоматически превратится в локальную ссылку в вызывающем Java/Kotlin коде.
+    return resultBitmap; 
 }
 
 void AndroidLibRaw::setCaptureScaleMul(bool capture) {
