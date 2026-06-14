@@ -166,17 +166,13 @@ public class LibRaw implements AutoCloseable {
      * Calls recycle and deletes LibRaw
      */
     public native void recycle();
-    public native int open(String file);
-    public native int openBufferPtr(long ptr, int size);
-    public native int openBuffer(byte[] buffer, int size);
-    public native int openBufferNoUnpack(byte[] buffer, int size);
+    public native int open(String file, boolean useThumb);
+    public native int openBufferPtr(long ptr, int size, boolean useThumb);
+    public native int openBuffer(byte[] buffer, int size, boolean useThumb);
     public native int openFd(int fd);
 
     public native int dcrawProcess();
     public native int dcrawProcessForced(@NonNull ByteBuffer colorCurve);
-
-    public native int unpack();
-    public native int unpackThumb();
 
     public native void clearCancelFlag();
     public native void setCancelFlag();
