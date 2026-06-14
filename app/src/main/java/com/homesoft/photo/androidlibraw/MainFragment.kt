@@ -274,7 +274,7 @@ class MainFragment : Fragment() {
     private fun unpackFd(pfd: ParcelFileDescriptor):LibRaw? {
         val fd = pfd.detachFd()
         val libRaw = LibRaw()
-        val result = libRaw.openFd(fd)
+        val result = libRaw.openFd(fd, false)
         if (result == 0) {
             libRaw.setOutputBps(8) //Always 8 for Android
             return libRaw
@@ -301,7 +301,7 @@ class MainFragment : Fragment() {
     private fun openFd(pfd: ParcelFileDescriptor, opts:BitmapFactory.Options, viewWidth:Int):LibRaw? {
         val libRaw = LibRaw.newInstance()
         val fd = pfd.detachFd()
-        val result = libRaw.openFd(fd)
+        val result = libRaw.openFd(fd, false)
         pfd.close()
         if (result != 0) {
             libRaw.close()

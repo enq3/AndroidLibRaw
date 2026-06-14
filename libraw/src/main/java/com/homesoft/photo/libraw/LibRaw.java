@@ -83,16 +83,16 @@ public class LibRaw implements AutoCloseable {
         return mNativeContext == 0;
     }
 
-    public Bitmap decodeBitmap(String file, BitmapFactory.Options options) throws ErrnoException {
-        int result = open(file);
+    public Bitmap decodeBitmap(String file, BitmapFactory.Options options, boolean useThumb) throws ErrnoException {
+        int result = open(file, useThumb);
         if (result != 0) {
             throw new ErrnoException("open", result);
         }
         return decodeBitmap(options);
     }
-    public static Bitmap decodeBitmap(long buffer, int size, BitmapFactory.Options options) throws ErrnoException {
+    public static Bitmap decodeBitmap(long buffer, int size, BitmapFactory.Options options, boolean useThumb) throws ErrnoException {
         try (final LibRaw libRaw = new LibRaw()){
-            int result = libRaw.openBufferPtr(buffer, size);
+            int result = libRaw.openBufferPtr(buffer, size, useThumb);
             if(result!=0) {
                 throw new ErrnoException("openBufferPtr", result);
             }
