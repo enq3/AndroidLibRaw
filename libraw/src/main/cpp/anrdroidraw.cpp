@@ -71,21 +71,23 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_homesoft_photo_libraw_LibRaw_ex
         libRaw->recycle();
         return nullptr;
     }
-    libraw_processed_image_t *thumb = libRaw->dcraw_make_mem_thumb();
-    if (!thumb) {
-        libRaw->recycle();
-        return nullptr;
-    }
-    __android_log_print(ANDROID_LOG_INFO, "LibRaw", 
-        "thumb type=%d, size=%d, width=%d, height=%d", 
-        thumb->type, thumb->data_size, thumb->width, thumb->height);
-    jbyteArray bytes = env->NewByteArray(thumb->data_size);
-    env->SetByteArrayRegion(bytes, 0, thumb->data_size, (jbyte *) thumb->data);
+    if (libRaw->imgdata.thumbnail.tlength > 0 && libRaw->imgdata.thumbnail.thumb) {
 
-    // Освобождаем ресурсы
-    libRaw->dcraw_clear_mem(thumb);
-    libRaw->recycle();
-    return bytes;
+        __android_log_print(ANDROID_LOG_INFO, "LibRaw", 
+            "Thumbnail: format=%d, size=%d, width=%d, height=%d",
+            libRaw->imgdata.thumbnail.tformat,
+            libRaw->imgdata.thumbnail.tlength,
+            libRaw->imgdata.thumbnail.twidth,
+            libRaw->imgdata.thumbnail.theight);
+
+        jbyteArray result = env->NewByteArray(libRaw->imgdata.thumbnail.tlength);
+        env->SetByteArrayRegion(result, 0, libRaw->imgdata.thumbnail.tlength,
+                                (jbyte*)libRaw->imgdata.thumbnail.thumb);
+
+        return result;
+    }
+
+    return nullptr;
 }
 extern "C" JNIEXPORT jint JNICALL Java_com_homesoft_photo_libraw_LibRaw_openFd(JNIEnv* env, jobject jLibRaw, jint fd){
     LibRaw_fd_datastream stream(fd);
