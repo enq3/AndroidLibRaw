@@ -76,6 +76,9 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_homesoft_photo_libraw_LibRaw_ex
         libRaw->recycle();
         return nullptr;
     }
+    __android_log_print(ANDROID_LOG_INFO, "LibRaw", 
+        "thumb type=%d, size=%d, width=%d, height=%d", 
+        thumb->type, thumb->data_size, thumb->width, thumb->height);
     jbyteArray bytes = env->NewByteArray(thumb->data_size);
     env->SetByteArrayRegion(bytes, 0, thumb->data_size, (jbyte *) thumb->data);
 
